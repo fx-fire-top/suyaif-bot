@@ -5,7 +5,8 @@ import random
 import time
 import asyncio
 import string
-import requests
+import urllib.request
+import urllib.error
 from collections import defaultdict
 from dotenv import load_dotenv
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -19,12 +20,12 @@ from telegram.ext import (
 )
 
 load_dotenv()
-# বটের মেইন টোকেন ব্যাকএন্ডে সুরক্ষিত আছে
+# তোমার বটের মেইন টোকেন
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8919947592:AAHSzkjyjUvsQ0YPrLGL9LS3o78oqOqO9YY")
 
-# তোমার রেন্ডার এপিআই কি এবং সার্ভিস আইডি ১০০% সেট করা আছে
-RENDER_API_KEY = os.getenv("RENDER_API_KEY", "rnd_raJIMHSktdbZG5pa4B1Jhee9MKf1")
-RENDER_SERVICE_ID = os.getenv("RENDER_SERVICE_ID", "srv-d8jalim47okc73a26jsg")
+# এপিআই কি এবং সার্ভিস আইডি সরাসরি কোডে ফিক্সড করে দেওয়া হলো
+RENDER_API_KEY = "rnd_raJIMHSktdbZG5pa4B1Jhee9MKf1"
+RENDER_SERVICE_ID = "srv-d8jalim47okc73a26jsg"
 
 BOT_NAME = "MD SUYAIF TOP - ULTRA AI BOT ☠️"
 GROUP_LINK = "https://t.me/GhostX_Official_Group"
@@ -32,7 +33,6 @@ YT_LINK = "https://youtube.com/@mdsuyaif_fx2.0"
 WHATSAPP_CH = "https://whatsapp.com/channel/0029Vb8RBGlEquiSBj3XwB0P"
 HACK_WEB = "https://fxfiretopff1.vercel.app/"
 
-# কাজের প্রফেশনাল ওয়েবসাইটের লিংকসমূহ
 TIKTOK_WM_WEB = "https://snaptik.app/"  
 PHOTO_WM_WEB = "https://www.watermarkremover.io/"  
 AI_VIDEO_WEB = "https://lumalabs.ai/dream-machine"  
@@ -44,7 +44,7 @@ SPAM_LIMIT = 1.5
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# MD SUYAIF নামের নিখুঁত সোজা আল্ট্রা-বোল্ড সলিড ব্যানার ডিজাইন
+# ওনার ব্যানার ১০০% ফিক্সড
 OWNER_BANNER = """
 <b><code>███╗   ███╗██████╗     ███████╗██╗   ██╗██╗  ██╗██████╗ ██████╗ 
 ████╗ ████║██╔══██╗    ██╔════╝██║   ██║╚██╗██╔╝██╔══██╗██╔═══╝ 
@@ -69,26 +69,25 @@ def get_main_menu() -> InlineKeyboardMarkup:
         [InlineKeyboardButton("👥 অফিসিয়াল গ্রুপ", url=GROUP_LINK), InlineKeyboardButton("📺 ইউটিউব চ্যানেল", url=YT_LINK)]
     ])
 
+# ১ ক্লিকে পারফেক্ট কপি করার জন্য স্টাইলিশ ফন্ট জেনারেটর
 def make_ultra_bold_styles(name: str) -> list:
+    n = name.upper()
     return [
-        f"☠️ <b>{name.upper()}</b> ☠️",
-        f"🔥 <b>{name}</b> 🔥",
-        f"👑 <b>{name.upper()}</b> 👑",
-        f"⚡ <b>{name}</b> ⚡",
-        f"✨ <b>[ {name.upper()} ]</b> ✨"
+        f"<code>☠️︎ {n} ☠️︎</code>",
+        f"<code>🔥 {n} 🔥</code>",
+        f"<code>👑 𝕸𝕽 {n} 👑</code>",
+        f"<code>⚡ {n} ⚡</code>",
+        f"<code>✨ [ {n} ] ✨</code>"
     ]
 
 def deploy_render_server() -> bool:
-    if not RENDER_API_KEY or not RENDER_SERVICE_ID:
-        return False
     url = f"https://api.render.com/v1/services/{RENDER_SERVICE_ID}/deploys"
-    headers = {
-        "Accept": "application/json",
-        "Authorization": f"Bearer {RENDER_API_KEY}"
-    }
+    req = urllib.request.Request(url, method="POST")
+    req.add_header("Accept", "application/json")
+    req.add_header("Authorization", f"Bearer {RENDER_API_KEY}")
     try:
-        response = requests.post(url, headers=headers, json={})
-        return response.status_code in [200, 201]
+        with urllib.request.urlopen(req) as response:
+            return response.status in [200, 201]
     except Exception:
         return False
 
@@ -116,13 +115,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text=help_text, parse_mode='HTML')
 
 async def restart_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    status_msg = await update.message.reply_text("⏳ <code>[CONNECTING TO RENDER API...]</code>\nসার্ভার রিডিপ্লয় করার রিকোয়েস্ট পাঠানো হচ্ছে...", parse_mode='HTML')
+    status_msg = await update.message.reply_text("⏳ <code>[CONNECTING TO RENDER API...]</code>\nরেন্ডার সার্ভার রিফ্রেশ ও রিস্টার্ট করার রিকোয়েস্ট পাঠানো হচ্ছে...", parse_mode='HTML')
     await asyncio.sleep(1)
     
     if deploy_render_server():
-        await status_msg.edit_text("🚀 <b>সফল হয়েছে!</b> রেন্ডার সার্ভারে নতুন ডেপ্লয়মেন্ট (Clear Cache & Deploy) শুরু হয়েছে। ১-২ মিনিটের মধ্যে বট সম্পূর্ণ সতেজ হয়ে রি-অনলাইন হবে।")
+        await status_msg.edit_text("🚀 <b>সফল হয়েছে বন্ধু!</b> রেন্ডার সার্ভারে (Clear Cache & Deploy) সফলভাবে শুরু হয়েছে। ১-২ মিনিটের মধ্যে বট সম্পূর্ণ ফ্রেশ হয়ে রি-অনলাইন হবে।")
     else:
-        await status_msg.edit_text("⚠️ <b>এপিআই এরর!</b> কোডের ভেতরে <code>RENDER_SERVICE_ID</code> সঠিকভাবে সেট করা নেই। দয়া করে গিটহাবে আইডিটি বসিয়ে ম্যানুয়ালি রেন্ডার থেকে একবার রি-ডেপ্লয় দিন।", parse_mode='HTML')
+        await status_msg.edit_text("⚠️ <b>সার্ভার রেসপন্স করছে না!</b> অনুগ্রহ করে তোমার রেন্ডার ড্যাশবোর্ডে গিয়ে ম্যানুয়ালি একবার 'Clear Cache & Deploy' করো।", parse_mode='HTML')
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -143,21 +142,21 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"2️⃣ <b>Device:</b> <code>Symphony Z70</code>\n\n"
             f"💡 <i>নোট: সিকিউরিটি পলিসির কারণে রিমোট হ্যাকিং লাইভ ডাটা প্রদর্শন নিষিদ্ধ।</i>"
         )
-        await status_msg.edit_text(text=wifi_report, parse_mode='HTML', reply_markup=get_main_menu())
+        await status_msg.edit_text(text=wifi_report, parse_mode='HTML')
     elif data == "wifi_pass":
         chars = string.ascii_letters + string.digits + "!@#$%"
         wifi_password = "".join(random.choice(chars) for _ in range(14))
-        await query.edit_message_text(text=f"🔑 <b>রাউটার সিকিউরড পাসওয়ার্ড জেনারেটর:</b>\n\n<code>{wifi_password}</code>\n\n💡 এটি কপিলিংক স্টাইল, টাচ করলেই কপি হবে।", parse_mode='HTML', reply_markup=get_main_menu())
+        await query.edit_message_text(text=f"🔑 <b>রাуটার সিকিউরড পাসওয়ার্ড জেনারেটর:</b>\n\n<code>{wifi_password}</code>\n\n💡 এটি কপিলিংক স্টাইল, টাচ করলেই কপি হবে।", parse_mode='HTML')
     elif data == "anti_ban":
-        await query.edit_message_text(text="🛡️ <b>অ্যান্টি-ব্যান প্রোটেকশন স্ট্যাটাস:</b>\n\n✅ <b>ফায়ারওয়াল:</b> একটিভ\n✅ <b>বাইপাস সিকিউরিটি:</b> ১০০% সেফ\n\n🤖 আপনার ডাটাবেস সম্পূর্ণ সুরক্ষিত আছে বন্ধু!", parse_mode='HTML', reply_markup=get_main_menu())
+        await query.edit_message_text(text="🛡️ <b>অ্যান্টি-ব্যান প্রোটেকশন স্ট্যাটাস:</b>\n\n✅ <b>ফায়ারওয়াল:</b> একটিভ\n✅ <b>বাইপাস সিকিউরিটি:</b> ১০০% সেফ\n\n🤖 আপনার ডাটাবেস সম্পূর্ণ সুরক্ষিত আছে বন্ধু!", parse_mode='HTML')
     elif data == "pass_gen":
         chars = string.ascii_letters + string.digits + "@#$%"
         password = "".join(random.choice(chars) for _ in range(12))
         pass_text = f"🔐 <b>আপনার জন্য একটি স্ট্রং পাসওয়ার্ড তৈরি করা হয়েছে:</b>\n\n<code>{password}</code>\n\n💡 নামের ওপর টাচ করলেই কপি হয়ে যাবে।"
-        await query.edit_message_text(text=pass_text, parse_mode='HTML', reply_markup=get_main_menu())
+        await query.edit_message_text(text=pass_text, parse_mode='HTML')
     elif data == "dollar_rate":
-        rate_text = f"💵 <b>লাইভ কারেন্সি এবং ডলার রেট আপডেট:</b>\n\n🇺🇸 ১ ইউএস ডলার (USD) = <b>১২ো.৫০ টাকা</b> (আনুমানিক)\n\n💡 ফ্রি ফায়ার ডায়মন্ড ও টপ-আপের হিসাব করতে এটি সাহায্য করবে।"
-        await query.edit_message_text(text=rate_text, parse_mode='HTML', reply_markup=get_main_menu())
+        rate_text = f"💵 <b>লাইভ কারেন্সি এবং ডলার রেট আপডেট:</b>\n\n🇺🇸 ১ ইউএস ডলার (USD) = <b>১২০.৫০ টাকা</b> (আনুমানিক)\n\n💡 ফ্রি ফায়ার ডায়মন্ড ও টপ-আপের হিসাব করতে এটি সাহায্য করবে।"
+        await query.edit_message_text(text=rate_text, parse_mode='HTML')
     elif data == "emoji_mix":
         context.user_data["step"] = "wait_emojis"
         await query.edit_message_text("🎭 <b>ইমোজি মিক্সার সিস্টেম:</b>\n\nযেকোনো দুটি ভিন্ন ইমোজি একসাথে টাইপ করে আমাকে পাঠাও (যেমন: 😭❤️), আমি সেটার একটা স্পেশাল কম্বিনেশন বানিয়ে দেব!")
@@ -176,9 +175,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("📱 টার্গেট মোবাইল নম্বরটি লিখুন:")
     elif data == "name_design":
         context.user_data["step"] = "wait_name_text"
-        await query.edit_message_text("✨ যে নামটি আল্ট্রা-বোল্ড স্টাইল করতে চান তা লিখুন (টাচ করলেই কপি হবে):")
+        await query.edit_message_text("✨ <b>যে নামটি আল্ট্রা-বোল্ড স্টাইল করতে চান তা টাইপ করে পাঠান:</b>")
     elif data == "scan":
-        await query.edit_message_text(text="🛡️ <b>ফায়ারওয়াল স্ক্যানিং...</b>\n\nবটের ইন্টারনাল টোকেন ও অ্যান্টি-হ্যাকিং প্রোটেকশন ১০০% নিরাপদ রয়েছে।", reply_markup=get_main_menu(), parse_mode='HTML')
+        await query.edit_message_text(text="🛡️ <b>ফায়ারওয়াল স্ক্যানিং...</b>\n\nবটের ইন্টারনাল টোকেন ও অ্যান্টি-হ্যাকিং প্রোটেকশন ১০০% নিরাপদ রয়েছে।", parse_mode='HTML')
 
 async def handle_user_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text: return
@@ -186,7 +185,7 @@ async def handle_user_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     current_time = time.time()
     
     if current_time - user_last_message_time[uid] < SPAM_LIMIT:
-        await update.message.reply_text("⚠️ <b>স্প্যামিং নিষিদ্ধ!</b> অনুগ্রহ করে একটু ধীরে মেসেজ পাঠান।")
+        await update.message.reply_text("⚠️ <b>স্প্যাম করা যাবে না বন্ধু!</b> অনুগ্রহ করে একটু ধীরে মেসেজ পাঠান।")
         return
     user_last_message_time[uid] = current_time
 
@@ -195,35 +194,46 @@ async def handle_user_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     step = context.user_data.get("step")
 
     if not step:
-        if any(x in user_raw for x in ["কার বট", "মালিক কে", "তৈরি করছে", "owner", "who made", "creator", "কার বোড", "কার বোট"]):
+        owner_keywords = ["মালিক কে", "মালিক", "owner", "creator", "তৈরি করছে", "সুয়াইফ", "সোয়াইব", "suyaif", "shoyaif", "soyaif"]
+        if any(x in user_raw for x in owner_keywords):
             response_owner = (
-                f"👑 <b>এই বটের একমাত্র সম্মানীয় মালিক এবং ক্রিয়েটর হলেন:</b>\n"
+                f"👑 <b>এই বটের একমাত্র সম্মানীয় মালিক এবং ক্রিয়েটর হলেন:</b>\n\n"
                 f"{OWNER_BANNER}\n"
                 f"🚀 <b>MD SUYAIF TOP</b> ভাইয়ের অফিশিয়াল গ্রুপে যুক্ত হতে নিচে ক্লিক করুন!\n"
                 f"🔗 গ্রুপ লিংক: {GROUP_LINK}"
             )
-            await update.message.reply_text(text=response_owner, parse_mode='HTML', reply_markup=get_main_menu())
+            await update.message.reply_text(text=response_owner, parse_mode='HTML')
+            return
+
+        if any(x in user_raw for x in ["তোমার নাম কি", "tomar nam ki", "your name", "বটের নাম কি", "বট নাম"]):
+            await update.message.reply_text(f"🤖 আমার নাম <b>{BOT_NAME}</b>! আমি সুয়াইফ ভাইয়ের তৈরি করা একটি শক্তিশালী কৃত্রিম বুদ্ধিমত্তা সম্পন্ন রোবট। 🔥💥")
             return
 
         if any(x in user_raw for x in ["সালাম", "salam", "assalamualaikum", "আসসালামু আলাইকুম"]):
             await update.message.reply_text("📿 ওয়াআলাইকুম আসসালাম ওয়া রাহমাতুল্লাহ! সোয়ائب ভাইয়ের মেগা এআই বটে আপনাকে স্বাগতম। আপনি কেমন আছেন? 🥰")
-        elif any(x in user_raw for x in ["তোমার নাম কি", "tomar nam ki", "your name"]):
-            await update.message.reply_text(f"🤖 আমার নাম <b>{BOT_NAME}</b>! আমি সোয়ائب ভাইয়ের তৈরি করা একটি শক্তিশালী কৃত্রিম বুদ্ধিমত্তা সম্পন্ন রোবট।")
-        elif any(x in user_raw for x in ["কেমন আছো", "kemon acho", "how are you"]):
-            await update.message.reply_text("😇 আলحمدুলিল্লাহ, আমি খুব ভালো আছি ভাই! আপনি কেমন আছেন? আপনার দিনটি কেমন যাচ্ছে?")
-        elif "আমার নাম" in text or "amar nam" in user_raw:
-            await update.message.reply_text("🥰 ওহ ওয়াও! খুব সুন্দর তো আপনার নাম। আপনার সাথে পরিচিত হয়ে আমাদের ভীষণ ভালো লাগলো!")
-        elif any(x in user_raw for x in ["মুভি", "movie", "link", "লিংক", "video", "ভিডিও"]):
-            await update.message.reply_text("🎬 <b>লিংক সার্চার انجن:</b>\n\nআপনি যদি কোনো মুভি বা ভিডিওর লিংক চান, তবে আমাদের অফিশিয়াল গ্রুপে এসে সার্চ করুন। গ্রুপ লিংক: " + GROUP_LINK)
-        else:
-            await update.message.reply_text(f"🧠 <b>এআই রেসপন্স:</b> আপনার প্রশ্নটি আমি বুঝতে পেরেছি। এই বিষয়ে সাহায্য করতে আমি সদা প্রস্তুত! অনুগ্রহ করে বিস্তারিত জানতে আমাদের /help মেনু বা ড্যাশবোর্ড বাটন ব্যবহার করুন। ✨")
+            return
+
+        if any(x in user_raw for x in ["কেমন আছো", "kemon acho", "how are you", "কেমন আছেন"]):
+            await update.message.reply_text("😇 আলحمدুলিল্লাহ, আমি খুব ভালো আছি ভাই! আপনি কেমন আছেন? আপনার দিনটি কেমন যাচ্ছে? ✨")
+            return
+
+        if "আমার নাম" in text or "amar nam" in user_raw:
+            await update.message.reply_text("🥰 ওহ ওয়াও! খুব সুন্দর তো আপনার নাম। আপনার সাথে পরিচিত হয়ে আমাদের ভীষণ ভালো লাগলো! 💞")
+            return
+
+        ai_replies = [
+            f"🧠 <b>স্মার্ট এআই রেসপন্স:</b> আপনার কথাটি আমি একদম পরিষ্কার বুঝতে পেরেছি! আপনার এই দারুণ প্রশ্নের উত্তর দিতে আমি সবসময় রেডি। ইমোজি সহ আরও বিস্তারিত জানতে মেনু বাটন ব্যবহার করুন। 🚀✨",
+            f"🤖 <b>আল্ট্রা এআই ইঞ্জিন:</b> ওয়াও! খুব সুন্দর একটি প্রশ্ন করেছেন। এই বিষয়ে আমাদের ড্যাশবোর্ডে দারুণ সব ফিচার আছে, একবার ট্রাই করে দেখুন! 💥💫",
+            f"✨ <b>Suyaif AI Bot:</b> আমি আপনার রিকোয়েস্টটি প্রসেস করছি। সোয়াইফ ভাইয়ের এই মেগা বটের সব সার্ভিস একদম ফ্রিতে ব্যবহার করতে পারবেন! 🥰🔥"
+        ]
+        await update.message.reply_text(random.choice(ai_replies), parse_mode='HTML')
         return
 
     if step == "wait_emojis":
         mixes = ["🔥☠️🔥", "❤️‍🔥🥺❤️‍🔥", "👾👽👾", "👻🔥👻", "🦅👑🦅", "💥⚡💥", "🎭✨🎭"]
         chosen_mix = random.choice(mixes)
         result_emoji = f"{text[0:1]}{chosen_mix}{text[1:2]}" if len(text) >= 2 else f"{text}🔥☠️"
-        await update.message.reply_text(f"🎭 <b>আপনার ইমোজি সফলভাবে মিক্স করা হয়েছে:</b>\n\n<code>{result_emoji}</code>\n\n💡 ১ ক্লিকে কপি করার জন্য ইমোজির ওপর触 করো!", parse_mode='HTML', reply_markup=get_main_menu())
+        await update.message.reply_text(f"🎭 <b>আপনার ইমোজি সফলভাবে মিক্স করা হয়েছে:</b>\n\n<code>{result_emoji}</code>\n\n💡 ১ ক্লিকে কপি করার জন্য ইমোজির ওপর টাচ করো!", parse_mode='HTML')
         context.user_data.clear()
 
     elif step == "wait_game_num":
@@ -231,19 +241,22 @@ async def handle_user_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             guess = int(text)
             secret = context.user_data.get("secret_num")
             if guess == secret:
-                await update.message.reply_text("🎉 <b>অসাধারণ!</b> তুমি জিতে গেছো! আমার ভাবা সংখ্যাটি আসলেই ওটাই ছিল।", parse_mode='HTML', reply_markup=get_main_menu())
+                await update.message.reply_text("🎉 <b>অসাধারণ!</b> তুমি জিতে গেছো! আমার ভাবা সংখ্যাটি আসলেই ওটাই ছিল। 😊", parse_mode='HTML')
             else:
-                await update.message.reply_text(f"❌ <b>উফফ হলো না!</b> আমার ভাবা সংখ্যাটি ছিল <code>{secret}</code>। আবার চেষ্টা করো!", parse_mode='HTML', reply_markup=get_main_menu())
+                await update.message.reply_text(f"❌ <b>উফফ হলো না!</b> আমার ভাবা সংখ্যাটি ছিল <code>{secret}</code>। আবার চেষ্টা করো! 🎲", parse_mode='HTML')
         except ValueError:
             await update.message.reply_text("❌ অনুগ্রহ করে সঠিক সংখ্যা ইনপুট দাও।")
         context.user_data.clear()
 
     elif step == "wait_name_text":
         designed_list = make_ultra_bold_styles(text)
-        response = f"✨ <b>আপনার নামের আল্ট্রা-বোল্ড ফন্টগুলো নিচে দেওয়া হলো:</b>\n<i>(যেকোনো একটির ওপর টাচ করলেই কপি হয়ে যাবে)</i>\n\n"
+        
+        await update.message.reply_text("✨ <b>আপনার নামের ৫টি আল্ট্রা-বোল্ড ডিজাইন রেডি করা হয়েছে:</b>\n<i>(যেকোনো একটি লাইনের ওপর জাস্ট টাচ করলেই অটো কপি হয়ে যাবে)</i>", parse_mode='HTML')
+        
         for idx, d_name in enumerate(designed_list, 1):
-            response += f"{idx}. <code>{d_name}</code>\n"
-        await update.message.reply_text(text=response, parse_mode='HTML', reply_markup=get_main_menu())
+            await update.message.reply_text(text=f"<b>ফন্ট {idx}:</b>\n\n{d_name}", parse_mode='HTML')
+            await asyncio.sleep(0.3)
+            
         context.user_data.clear()
 
     elif step == "wait_termux_request":
@@ -254,18 +267,18 @@ async def handle_user_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<code># Generated by Suyaif Bot\nimport time\nprint('Starting {text} Tools...')\nfor i in range(5):\n    time.sleep(0.5)\n    print('[+] Processing Core Session...')\nprint('Task Successfully Completed!')</code>\n\n"
             f"💡 এটি টার্মাক্সে রান করতে `python` ফাইল বানিয়ে রান করুন।"
         )
-        await update.message.reply_text(text=custom_code, parse_mode='HTML', reply_markup=get_main_menu())
+        await update.message.reply_text(text=custom_code, parse_mode='HTML')
         context.user_data.clear()
 
     elif step == "wait_uid":
-        await update.message.reply_text(f"🔍 <b>প্লেয়ার/টেলিগ্রাম আইডি স্ক্যান রিপোর্ট:</b>\n\n🎯 আইডি: <code>{text}</code>\n📊 ডাটাবেস ভেরিফাইড এবং সুরক্ষিত রয়েছে।", parse_mode='HTML', reply_markup=get_main_menu())
+        await update.message.reply_text(f"🔍 <b>প্লেয়ার/টেলিগ্রাম আইডি স্ক্যান রিপোর্ট:</b>\n\n🎯 আইডি: <code>{text}</code>\n📊 ডাটাবেস ভেরিфাইড এবং সুরক্ষিত রয়েছে।", parse_mode='HTML')
         context.user_data.clear()
     elif step == "wait_num":
         context.user_data["target_num"] = text
         context.user_data["step"] = "wait_count"
         await update.message.reply_text("✅ টার্গেট নম্বর সেট হয়েছে। এবার এসএমএস কাউন্ট লিখুন (১-৫৫):")
     elif step == "wait_count":
-        await update.message.reply_text("🚀 বোম্বিং টাস্ক ব্যাকএন্ড সার্ভারে সফলভাবে চালু হয়েছে!", reply_markup=get_main_menu())
+        await update.message.reply_text("🚀 বোম্বিং টাস্ক ব্যাকএন্ড সার্ভারে সফলভাবে চালু হয়েছে!")
         context.user_data.clear()
 
 if __name__ == "__main__":
